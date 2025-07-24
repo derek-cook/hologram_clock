@@ -7,6 +7,7 @@ A wifi-connected ESP32-based digital clock display using Adafruit_ST77XX library
 
 ## Features
 
+- dynamic env variables for wifi credentials, using platformio script to set macros securely
 - Dims the backlight between 10pm and 7am, just to demo the pwm on the BL pin. 
 - WiFi-connected NTP time synchronization
 - TFT LCD display with customizable clock interface
