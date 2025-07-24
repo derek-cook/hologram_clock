@@ -1,17 +1,18 @@
-# ESP32 TFT LCD Cube Clock
+# Hologram clock
 
-A wifi-connected ESP32-based digital clock display using Adafruit_ST77XX library for LCD displays.
+A digital clock running on an ESP32 microcontroller, with a ST7789 1.3 inch display. The beam splitter cube adds a hologram effect, similar to how HUD (heads-up display) works, but is not required for the clock.
 
 ![Clock Demo](images/clock.jpg)
 
+Note: This is probably not the most efficient way to run a clock. Ideally I'd have RTC functionality, power loss recovery, low-power sleep mode, a way to set time and brightness, etc.
 
 ## Features
 
-- dynamic env variables for wifi credentials, using platformio script to set macros securely
-- Dims the backlight between 10pm and 7am, just to demo the pwm on the BL pin. 
+- env variables for wifi credentials using platformio script to set macros dynamically and securely
+- Dims the backlight between 10pm and 7am, just to demo the pwm on the BL pin.
+- reversed display mode to handle HUD/mirroring
 - WiFi-connected NTP time synchronization
 - TFT LCD display with customizable clock interface
-- Environment variable configuration for WiFi credentials
 - Support for ESP32-S3 and other ESP32 variants (with few changes)
 
 ## Hardware Requirements
