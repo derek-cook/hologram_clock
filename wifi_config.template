@@ -1,0 +1,19 @@
+# WiFi Configuration Template
+# 
+# To use this project with your WiFi credentials:
+# 
+# 1. Create a file named '.env' in the root directory (same level as platformio.ini)
+# 2. Copy the contents below into your .env file
+# 3. Replace the values with your actual WiFi credentials
+# 4. The .env file should be automatically ignored by git for security
+#
+# Contents for .env file:
+# ========================
+# WIFI_SSID=YourActualWiFiSSID
+# WIFI_PASSWORD=YourActualWiFiPassword
+#
+# Example:
+# WIFI_SSID=MyHomeNetwork
+# WIFI_PASSWORD=MySecurePassword123
+#
+# Note: Do not use quotes around the values in the .env file 
