@@ -115,11 +115,12 @@ void setupTime() {
 
 void printClock() {
   // Set backlight pwm signal to 1 between the hourse of 10pm and 7am, and 255 for 7am to 10pm
-  if (timeinfo.tm_hour >= 22 || timeinfo.tm_hour < 7) {
-    analogWrite(TFT_BL, 1);
-  } else {
-    analogWrite(TFT_BL, 255);
-  }
+  // if (timeinfo.tm_hour >= 22 || timeinfo.tm_hour < 7) {
+  //   analogWrite(TFT_BL, 1);
+  // } else {
+  //   analogWrite(TFT_BL, 255);
+  // }
+  analogWrite(TFT_BL, 255);
 
   /**
    * Center the clock text on 240x240 screen
