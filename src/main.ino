@@ -14,9 +14,7 @@
   - TFT MOSI -> MOSI (Hardware SPI)
  **************************************************************************/
 
-// #include <Adafruit_GFX.h>    // Core graphics library
-// #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
+#include <TFT_eSPI.h> // Graphics and font library for ST7789 driver chip
 #include <SPI.h>
 #include <WiFi.h>
 #include <time.h>
@@ -26,17 +24,26 @@ const char* password = WIFI_PASSWORD;
 
 // NTP server settings
 const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = -7 * 3600; // GMT-7 (Mountain Time) - CHANGE TO YOUR TIMEZONE
-const int daylightOffset_sec = 3600;   // Daylight saving time offset
 
-// Pin definitions for QT Py ESP32-S3
-#define TFT_CS         8  // Chip select
-#define TFT_RST       17  // Reset  
-#define TFT_DC         9  // Data/Command
-#define TFT_BL         18  // Backlight
+// Timezone strings for automatic DST handling
+// Format: "STD offset DST [offset],start[/time],end[/time]"
+// Common US timezones (automatically handles DST):
+// Pacific:  "PST8PDT,M3.2.0,M11.1.0"
+// Mountain: "MST7MDT,M3.2.0,M11.1.0"  
+// Central:  "CST6CDT,M3.2.0,M11.1.0"
+// Eastern:  "EST5EDT,M3.2.0,M11.1.0"
+// Arizona (no DST): "MST7"
+// M3.2.0 = 2nd Sunday in March, M11.1.0 = 1st Sunday in November
+const char* timezone_str = "PST8PDT,M3.2.0,M11.1.0";
 
-// Create display object for ST7789 (240x240) using hardware SPI
-Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, TFT_CS, TFT_DC, TFT_RST);
+// Pin definitions are in User_Setup.h for TFT_eSPI
+// TFT_BL is defined in User_Setup.h
+#ifndef TFT_BL
+  #define TFT_BL 20  // Backlight pin
+#endif
+
+// Create display object
+TFT_eSPI tft = TFT_eSPI();
 
 // Global variables for time display
 String _dayOfWeek;
@@ -90,8 +97,12 @@ void connectToWiFi() {
 }
 
 void setupTime() {
-  // Configure time with NTP server
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  // Configure time with NTP server first
+  configTime(0, 0, ntpServer);
+  
+  // Then set timezone string for automatic DST handling
+  setenv("TZ", timezone_str, 1);
+  tzset();
   
   tft.println("Waiting for NTP time sync");
   Serial.print("Waiting for NTP time sync");
@@ -107,6 +118,10 @@ void setupTime() {
     Serial.println();
     Serial.println("Time synchronized with NTP server");
     Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    Serial.print("Timezone: ");
+    Serial.println(timezone_str);
+    Serial.print("DST: ");
+    Serial.println(timeinfo.tm_isdst ? "Yes" : "No");
   } else {
     Serial.println();
     Serial.println("Failed to obtain time from NTP server");
@@ -120,7 +135,7 @@ void printClock() {
   // } else {
   //   analogWrite(TFT_BL, 255);
   // }
-  analogWrite(TFT_BL, 255);
+  analogWrite(TFT_BL, 1);
 
   /**
    * Center the clock text on 240x240 screen
@@ -131,7 +146,9 @@ void printClock() {
    * Row 3: text size 6 (36px high)
    * Total height: ~66px, starting at y=87 for centering
    */
-  tft.fillScreen(ST77XX_BLACK);
+  tft.setRotation(4);      // Use 4 for Prism version, 2 for NoPrism version
+  tft.invertDisplay(1);    // 1 = invert colors, 0 = normal
+  tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 87);
   
   // Get current local time
@@ -147,11 +164,11 @@ void printClock() {
   }
   
   // Display day and date
-  tft.setTextColor(ST77XX_RED);
+  tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.setTextSize(3);
   tft.print(_dayOfWeek);
   tft.print(" ");
-  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.println(_date);
   
   // Small spacing
@@ -174,29 +191,26 @@ void setup(void) {
 
 
 
-  // Initialize the 240x240 ST7789 display
-  tft.init(240, 240);
-
-  // Set display orientation with custom MADCTL (after initialization)
-  uint8_t madctl = ST77XX_MADCTL_MX;
-  tft.sendCommand(ST77XX_MADCTL, &madctl, 1);
-
-  // If row address order is swapped (MX bit set), we need to set vertical scroll offset
-  // The ST7789 has 320x240 memory but only shows 240x240, so we need 80 pixel offset
-  if (madctl) {
-      Serial.println("Setting vertical scroll offset");
-      uint8_t scroll_data[2] = {0, 80}; // Set vertical scroll start address to 80
-      tft.sendCommand(0x37, scroll_data, 2); // 0x37 = VSCSAD (Vertical Scroll Start Address)
-  }
-
-  // Optional: Set custom SPI speed (default is usually fine)
-  // tft.setSPISpeed(40000000);
+  // Initialize display
+  tft.init();
+  
+  // Set rotation if needed (0-3)
+  // tft.setRotation(0);
+  
+  // Mirror display on Y axis by setting MX bit in MADCTL register
+  // MADCTL bits: MY MX MV ML BGR MH x x
+  // MX = 1 mirrors horizontally (reflects on Y axis)
+  // tft.writecommand(0x36);  // MADCTL register
+  // tft.writedata(0x40);     // MX bit set (0x40 = mirror on Y axis)
+  
+  // The TFT_eSPI library handles the ST7789 initialization including
+  // any necessary offsets and MADCTL settings based on User_Setup.h
 
   Serial.println(F("Display Initialized"));
 
   
   // Clear screen
-  tft.fillScreen(ST77XX_BLACK);
+  tft.fillScreen(TFT_BLACK);
   
   // Connect to WiFi
   connectToWiFi();
@@ -210,6 +224,6 @@ void setup(void) {
 void loop() {
   Serial.println("Updating clock display...");
   printClock();
-  delay(60000);
+  delay(1000);
 } 
 
