@@ -169,8 +169,7 @@ void printClock() {
   // Display time (largest)
   tft.setTextFont(fontTime);
   tft.setTextSize(fontSizeTime);
-  // tft.println(_time);
-  tft.println("12:00");
+  tft.println(_time);
   
   tft.setCursor(0, 0);
 }
