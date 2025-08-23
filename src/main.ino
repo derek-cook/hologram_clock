@@ -36,12 +36,6 @@ const char* ntpServer = "pool.ntp.org";
 // M3.2.0 = 2nd Sunday in March, M11.1.0 = 1st Sunday in November
 const char* timezone_str = "PST8PDT,M3.2.0,M11.1.0";
 
-// Pin definitions are in User_Setup.h for TFT_eSPI
-// TFT_BL is defined in User_Setup.h
-#ifndef TFT_BL
-  #define TFT_BL 20  // Backlight pin
-#endif
-
 // Create display object
 TFT_eSPI tft = TFT_eSPI();
 
@@ -129,14 +123,6 @@ void setupTime() {
 }
 
 void printClock() {
-  // Set backlight pwm signal to 1 between the hourse of 10pm and 7am, and 255 for 7am to 10pm
-  // if (timeinfo.tm_hour >= 22 || timeinfo.tm_hour < 7) {
-  //   analogWrite(TFT_BL, 1);
-  // } else {
-  //   analogWrite(TFT_BL, 255);
-  // }
-  analogWrite(TFT_BL, 1);
-
   /**
    * Center the clock text on 240x240 screen
    * Each text row is vertically centered at 120px
@@ -146,8 +132,6 @@ void printClock() {
    * Row 3: text size 6 (36px high)
    * Total height: ~66px, starting at y=87 for centering
    */
-  tft.setRotation(4);      // Use 4 for Prism version, 2 for NoPrism version
-  tft.invertDisplay(1);    // 1 = invert colors, 0 = normal
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 87);
   
@@ -185,26 +169,17 @@ void printClock() {
 void setup(void) {
   Serial.begin(115200);
   delay(500);
-
-  
   Serial.println(F("ESP32-S3 LCD Cube Clock Starting..."));
 
-
-
-  // Initialize display
-  tft.init();
-  
-  // Set rotation if needed (0-3)
-  // tft.setRotation(0);
-  
+  analogWrite(TFT_BL, 255);
+  tft.invertDisplay(1);    // 1 = invert colors, 0 = normal
   // Mirror display on Y axis by setting MX bit in MADCTL register
   // MADCTL bits: MY MX MV ML BGR MH x x
   // MX = 1 mirrors horizontally (reflects on Y axis)
   // tft.writecommand(0x36);  // MADCTL register
   // tft.writedata(0x40);     // MX bit set (0x40 = mirror on Y axis)
-  
-  // The TFT_eSPI library handles the ST7789 initialization including
-  // any necessary offsets and MADCTL settings based on User_Setup.h
+  tft.setRotation(4);      // Use 4 for Prism version, 2 for NoPrism version. 
+  tft.init();
 
   Serial.println(F("Display Initialized"));
 
@@ -222,7 +197,7 @@ void setup(void) {
 }
 
 void loop() {
-  Serial.println("Updating clock display...");
+  Serial.println("Printing clock...");
   printClock();
   delay(1000);
 } 
