@@ -19,11 +19,11 @@
 #define TFT_BL   20  
                         
                         
-#define LOAD_GLCD   
-#define LOAD_FONT2  
-#define LOAD_FONT4  
-#define LOAD_FONT6  
-#define LOAD_FONT7  
+#define LOAD_GLCD 
+#define LOAD_FONT2 &Satisfy_24
+#define LOAD_FONT4 &Satisfy_24
+#define LOAD_FONT6 
+#define LOAD_FONT7 
 #define LOAD_FONT8  
 #define LOAD_GFXFF  
 #define SMOOTH_FONT

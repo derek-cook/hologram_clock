@@ -19,6 +19,7 @@
 #include <WiFi.h>
 #include <time.h>
 
+
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 
@@ -45,6 +46,11 @@ String _date;
 String _time;
 struct tm timeinfo;
 
+const int fontDate = 2;
+const int fontSizeDate = 3;
+const int fontTime = 4;
+const int fontSizeTime = 3;
+
 // Helper function to get day of week abbreviation
 String getDayOfWeekAbbr(int wday) {
   const char* days[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
@@ -67,7 +73,7 @@ void connectToWiFi() {
   Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, password);
   tft.setCursor(0, 0);
-  tft.setTextSize(2);
+  tft.setTextSize(1);
   tft.println("Connecting to WiFi");
   
   int attempts = 0;
@@ -149,19 +155,22 @@ void printClock() {
   
   // Display day and date
   tft.setTextColor(TFT_RED, TFT_BLACK);
-  tft.setTextSize(3);
+  tft.setTextFont(fontDate);
+  tft.setTextSize(fontSizeDate);
   tft.print(_dayOfWeek);
   tft.print(" ");
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.println(_date);
   
-  // Small spacing
-  tft.setTextSize(2);
+  // print an empty line
+  tft.setTextSize(1);
   tft.println(" ");
   
   // Display time (largest)
-  tft.setTextSize(6);
-  tft.println(_time);
+  tft.setTextFont(fontTime);
+  tft.setTextSize(fontSizeTime);
+  // tft.println(_time);
+  tft.println("12:00");
   
   tft.setCursor(0, 0);
 }
@@ -180,6 +189,7 @@ void setup(void) {
   // tft.writedata(0x40);     // MX bit set (0x40 = mirror on Y axis)
   tft.setRotation(4);      // Use 4 for Prism version, 2 for NoPrism version. 
   tft.init();
+  tft.setTextFont(1);
 
   Serial.println(F("Display Initialized"));
 
@@ -199,6 +209,6 @@ void setup(void) {
 void loop() {
   Serial.println("Printing clock...");
   printClock();
-  delay(1000);
+  delay(60000);
 } 
 
